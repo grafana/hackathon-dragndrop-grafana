@@ -54,6 +54,7 @@ describe('AddedComponentsRegistry', () => {
       addedComponents: [],
       exposedComponents: [],
       extensionPoints: [],
+      fileHandlers: []
     },
   };
 

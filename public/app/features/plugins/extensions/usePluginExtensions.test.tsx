@@ -7,6 +7,7 @@ import { ExposedComponentsRegistry } from './registry/ExposedComponentsRegistry'
 import { PluginExtensionRegistries } from './registry/types';
 import { useLoadAppPlugins } from './useLoadAppPlugins';
 import { createUsePluginExtensions } from './usePluginExtensions';
+import { FileHandlerRegistry } from './registry/FileHandlerRegistry';
 
 jest.mock('./useLoadAppPlugins');
 
@@ -20,6 +21,7 @@ describe('usePluginExtensions()', () => {
       addedComponentsRegistry: new AddedComponentsRegistry(),
       addedLinksRegistry: new AddedLinksRegistry(),
       exposedComponentsRegistry: new ExposedComponentsRegistry(),
+      fileHandlerRegistry: new FileHandlerRegistry()
     };
     jest.mocked(useLoadAppPlugins).mockReturnValue({ isLoading: false });
   });

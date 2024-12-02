@@ -30,6 +30,7 @@ import {
   useAddedComponentsRegistry,
   useExposedComponentsRegistry,
 } from '../extensions/ExtensionRegistriesContext';
+import { fileHandlerRegistry } from '../extensions/registry/setup';
 import { getPluginSettings } from '../pluginSettings';
 import { importAppPlugin } from '../plugin_loader';
 import { buildPluginSectionNav, pluginsLogger } from '../utils';
@@ -104,6 +105,7 @@ export function AppRootPage({ pluginId, pluginNavSection }: Props) {
           addedLinksRegistry: addedLinksRegistry.readOnly(),
           addedComponentsRegistry: addedComponentsRegistry.readOnly(),
           exposedComponentsRegistry: exposedComponentsRegistry.readOnly(),
+          fileHandlerRegistry: fileHandlerRegistry.readOnly(),
         }}
       >
         <plugin.root

@@ -13,7 +13,7 @@ import { DataQuery } from '@grafana/schema';
 import { GenericDataSourcePlugin } from '../datasources/types';
 
 import builtInPlugins from './built_in_plugins';
-import { addedComponentsRegistry, addedLinksRegistry, exposedComponentsRegistry } from './extensions/registry/setup';
+import { addedComponentsRegistry, addedLinksRegistry, exposedComponentsRegistry, fileHandlerRegistry } from './extensions/registry/setup';
 import { getPluginFromCache, registerPluginInCache } from './loader/cache';
 // SystemJS has to be imported before the sharedDependenciesMap
 import { SystemJS } from './loader/systemjs';
@@ -204,6 +204,10 @@ export async function importAppPlugin(meta: PluginMeta): Promise<AppPlugin> {
   addedLinksRegistry.register({
     pluginId,
     configs: plugin.addedLinkConfigs || [],
+  });
+  fileHandlerRegistry.register({
+    pluginId,
+    configs: plugin.fileHandlerConfigs || [],
   });
 
   importedAppPlugins[pluginId] = plugin;

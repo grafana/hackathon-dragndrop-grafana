@@ -60,6 +60,7 @@ type ExtensionV1 struct {
 
 type ExtensionsV2 struct {
 	AddedLinks        []AddedLink        `json:"addedLinks"`
+	FileHandlers      []FileHandler      `json:"fileHandlers"`
 	AddedComponents   []AddedComponent   `json:"addedComponents"`
 	ExposedComponents []ExposedComponent `json:"exposedComponents"`
 	ExtensionPoints   []ExtensionPoint   `json:"extensionPoints"`
@@ -74,6 +75,7 @@ func (e *Extensions) UnmarshalJSON(data []byte) error {
 	if err = json.Unmarshal(data, &extensionsV2); err == nil {
 		e.AddedComponents = extensionsV2.AddedComponents
 		e.AddedLinks = extensionsV2.AddedLinks
+		e.FileHandlers = extensionsV2.FileHandlers
 		e.ExposedComponents = extensionsV2.ExposedComponents
 		e.ExtensionPoints = extensionsV2.ExtensionPoints
 
@@ -118,6 +120,12 @@ type AddedLink struct {
 }
 
 type AddedComponent struct {
+	Targets     []string `json:"targets"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+}
+
+type FileHandler struct {
 	Targets     []string `json:"targets"`
 	Title       string   `json:"title"`
 	Description string   `json:"description"`

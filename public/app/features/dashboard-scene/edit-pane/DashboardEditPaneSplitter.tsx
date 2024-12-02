@@ -1,8 +1,9 @@
 import { css, cx } from '@emotion/css';
 import React, { CSSProperties, useEffect } from 'react';
+import DropZone from 'react-dropzone';
 
-import { GrafanaTheme2 } from '@grafana/data';
-import { config, useChromeHeaderHeight } from '@grafana/runtime';
+import { GrafanaTheme2, PluginExtensionPoints } from '@grafana/data';
+import { config, useChromeHeaderHeight, usePluginFileHandlers } from '@grafana/runtime';
 import { Icon, useStyles2, useTheme2 } from '@grafana/ui';
 import NativeScrollbar from 'app/core/components/NativeScrollbar';
 
@@ -12,7 +13,6 @@ import { NavToolbarActions } from '../scene/NavToolbarActions';
 
 import { DashboardEditPaneRenderer } from './DashboardEditPane';
 import { useEditPaneCollapsed } from './shared';
-import DropZone from 'react-dropzone';
 
 interface Props {
   dashboard: DashboardScene;
@@ -26,6 +26,7 @@ export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls
   const styles = useStyles2(getStyles, headerHeight ?? 0);
   const theme = useTheme2();
   const [isCollapsed, setIsCollapsed] = useEditPaneCollapsed();
+  const fh = usePluginFileHandlers({ extensionPointId: PluginExtensionPoints.DashboardGrid, context: {} });
 
   if (!config.featureToggles.dashboardNewLayouts) {
     return (
@@ -34,14 +35,19 @@ export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls
           <NavToolbarActions dashboard={dashboard} />
           <div className={styles.controlsWrapperSticky}>{controls}</div>
           <DropZone
-            onDrop={() => {
-              alert('droppped');
+            onDrop={(acceptedFiles: File[]) => {
+              fh.fileHandlers[0].onFile(acceptedFiles[0]);
             }}
           >
             {({ getRootProps, isDragActive }) => {
-              const overlayStyles = getOverlayStyles(theme, isDragActive)
+              const overlayStyles = getOverlayStyles(theme, isDragActive);
               return (
-                <div onPaste={() => {alert('pasted')}} {...getRootProps({ className: styles.body })}>
+                <div
+                  onPaste={() => {
+                    alert('pasted');
+                  }}
+                  {...getRootProps({ className: styles.body })}
+                >
                   {body}
                   <div className={overlayStyles.dropOverlay}>
                     <div className={overlayStyles.dropHint}>

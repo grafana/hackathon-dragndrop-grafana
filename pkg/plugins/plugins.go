@@ -164,6 +164,10 @@ func ReadPluginJSON(reader io.Reader) (JSONData, error) {
 		plugin.Extensions.AddedLinks = []AddedLink{}
 	}
 
+	if plugin.Extensions.FileHandlers == nil {
+		plugin.Extensions.FileHandlers = []FileHandler{}
+	}
+
 	if plugin.Extensions.AddedComponents == nil {
 		plugin.Extensions.AddedComponents = []AddedComponent{}
 	}

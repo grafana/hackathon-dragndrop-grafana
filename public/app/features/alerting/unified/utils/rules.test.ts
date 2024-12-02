@@ -55,6 +55,7 @@ describe('getRuleOrigin', () => {
           addedComponents: [],
           extensionPoints: [],
           exposedComponents: [],
+          fileHandlers: [],
         },
         dependencies: {
           grafanaVersion: '',

@@ -132,6 +132,8 @@ export interface PluginExtensions {
   // The link extensions that the plugin registers
   addedLinks: ExtensionInfo[];
 
+  fileHandlers: ExtensionInfo[];
+
   // The React components that the plugin exposes
   exposedComponents: Array<{
     id: string;

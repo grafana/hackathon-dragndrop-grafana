@@ -14,6 +14,7 @@ import { RawTimeRange, TimeZone } from './time';
 export enum PluginExtensionTypes {
   link = 'link',
   component = 'component',
+  fileHandler = 'fileHandler',
 }
 
 type PluginExtensionBase = {
@@ -29,6 +30,11 @@ export type PluginExtensionLink = PluginExtensionBase & {
   onClick?: (event?: React.MouseEvent) => void;
   icon?: IconName;
   category?: string;
+};
+
+export type PluginExtensionFileHandler = PluginExtensionBase & {
+  type: PluginExtensionTypes.fileHandler;
+  onFile: (file: File) => void;
 };
 
 export type PluginExtensionComponent<Props = {}> = PluginExtensionBase & {
@@ -116,6 +122,11 @@ export type PluginExtensionAddedLinkConfig<Context extends object = object> = Pl
   category?: string;
 };
 
+export type PluginExtensionFileHandlerConfig<Context extends object = object> = PluginExtensionConfigBase & {
+  targets: string | string[];
+  onFile: (file: File, helpers: PluginExtensionEventHelpers<Context>) => void;
+};
+
 export type PluginExtensionExposedComponentConfig<Props = {}> = PluginExtensionConfigBase & {
   /**
    * The unique identifier of the component
@@ -159,6 +170,7 @@ export enum PluginExtensionPoints {
   AlertingRecordingRuleAction = 'grafana/alerting/recordingrule/action',
   CommandPalette = 'grafana/commandpalette/action',
   DashboardPanelMenu = 'grafana/dashboard/panel/menu',
+  DashboardGrid = 'grafana/dashboard/grid',
   DataSourceConfig = 'grafana/datasources/config',
   ExploreToolbarAction = 'grafana/explore/toolbar/action',
   UserProfileTab = 'grafana/user/profile/tab',
