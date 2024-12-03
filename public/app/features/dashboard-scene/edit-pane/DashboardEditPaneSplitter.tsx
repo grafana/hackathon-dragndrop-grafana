@@ -1,10 +1,9 @@
 import { css, cx } from '@emotion/css';
 import React, { CSSProperties, useEffect } from 'react';
-import DropZone from 'react-dropzone';
 
 import { GrafanaTheme2, PluginExtensionPoints } from '@grafana/data';
-import { config, useChromeHeaderHeight, usePluginFileHandlers } from '@grafana/runtime';
-import { Icon, useStyles2, useTheme2 } from '@grafana/ui';
+import { config, useChromeHeaderHeight } from '@grafana/runtime';
+import { Icon, useStyles2 } from '@grafana/ui';
 import NativeScrollbar from 'app/core/components/NativeScrollbar';
 
 import { useSnappingSplitter } from '../panel-edit/splitter/useSnappingSplitter';
@@ -13,6 +12,7 @@ import { NavToolbarActions } from '../scene/NavToolbarActions';
 
 import { DashboardEditPaneRenderer } from './DashboardEditPane';
 import { useEditPaneCollapsed } from './shared';
+import { useDropAndPaste } from './useDropAndPaste';
 
 interface Props {
   dashboard: DashboardScene;
@@ -23,71 +23,28 @@ interface Props {
 
 export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls }: Props) {
   const headerHeight = useChromeHeaderHeight();
-  const styles = useStyles2(getStyles, headerHeight ?? 0);
-  const theme = useTheme2();
+  const { getRootProps, isDragActive, onPaste } = useDropAndPaste(PluginExtensionPoints.DashboardGrid);
+  const styles = useStyles2(getStyles, headerHeight ?? 0, isDragActive);
   const [isCollapsed, setIsCollapsed] = useEditPaneCollapsed();
-  const fh = usePluginFileHandlers({ extensionPointId: PluginExtensionPoints.DashboardGrid, context: {} });
 
   if (!config.featureToggles.dashboardNewLayouts) {
     return (
       <NativeScrollbar onSetScrollRef={dashboard.onSetScrollRef}>
-        <div className={styles.canvasWrappperOld}>
+        <div className={styles.canvasWrappperOld} onPaste={onPaste}>
           <NavToolbarActions dashboard={dashboard} />
           <div className={styles.controlsWrapperSticky}>{controls}</div>
-          <DropZone
-            onDrop={(acceptedFiles: File[]) => {
-              fh.fileHandlers[0].onFile(acceptedFiles[0]);
-            }}
-          >
-            {({ getRootProps, isDragActive }) => {
-              const overlayStyles = getOverlayStyles(theme, isDragActive);
-              return (
-                <div
-                  onPaste={() => {
-                    alert('pasted');
-                  }}
-                  {...getRootProps({ className: styles.body })}
-                >
-                  {body}
-                  <div className={overlayStyles.dropOverlay}>
-                    <div className={overlayStyles.dropHint}>
-                      <Icon name="upload" size="xxxl"></Icon>
-                      <h3>Create tables from spreadsheets</h3>
-                    </div>
-                  </div>
-                </div>
-              );
-            }}
-          </DropZone>
+          <div {...getRootProps({ className: styles.body })}>
+            {body}
+            <div className={styles.dropOverlay}>
+              <div className={styles.dropHint}>
+                <Icon name="upload" size="xxxl"></Icon>
+                <h3>Create tables from spreadsheets</h3>
+              </div>
+            </div>
+          </div>
         </div>
       </NativeScrollbar>
     );
-  }
-
-  function getOverlayStyles(theme: GrafanaTheme2, isDragActive: boolean) {
-    return {
-      dropZone: css`
-        height: 100%;
-      `,
-      dropOverlay: css`
-        background-color: ${isDragActive ? theme.colors.action.hover : `inherit`};
-        border: ${isDragActive ? `2px dashed ${theme.colors.border.medium}` : 0};
-        position: absolute;
-        display: ${isDragActive ? 'flex' : 'none'};
-        z-index: ${theme.zIndex.modal};
-        top: 0px;
-        left: 0px;
-        height: 100%;
-        width: 100%;
-        align-items: center;
-        justify-content: center;
-      `,
-      dropHint: css`
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-      `,
-    };
   }
 
   const { containerProps, primaryProps, secondaryProps, splitterProps, splitterState, onToggleCollapse } =
@@ -148,7 +105,7 @@ export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls
   );
 }
 
-function getStyles(theme: GrafanaTheme2, headerHeight: number) {
+function getStyles(theme: GrafanaTheme2, headerHeight: number, isDragActive: boolean) {
   return {
     canvasWrappperOld: css({
       label: 'canvas-wrapper-old',
@@ -202,6 +159,25 @@ function getStyles(theme: GrafanaTheme2, headerHeight: number) {
         background: theme.colors.background.canvas,
         top: headerHeight,
       },
+    }),
+    dropZone: css({ height: '100%' }),
+    dropOverlay: css({
+      backgroundColor: isDragActive ? theme.colors.action.hover : 'inherit',
+      border: isDragActive ? `2px dashed ${theme.colors.border.medium}` : 0,
+      position: 'absolute',
+      display: isDragActive ? 'flex' : 'none',
+      zIndex: theme.zIndex.modal,
+      top: 0,
+      left: 0,
+      height: '100%',
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }),
+    dropHint: css({
+      alignItems: 'center',
+      display: 'flex',
+      flexDirection: 'column',
     }),
   };
 }
