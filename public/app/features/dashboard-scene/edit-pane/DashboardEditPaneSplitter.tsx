@@ -23,7 +23,7 @@ interface Props {
 
 export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls }: Props) {
   const headerHeight = useChromeHeaderHeight();
-  const { getRootProps, isDragActive, onPaste } = useDropAndPaste(dashboard);
+  const { hint, getRootProps, isDragActive, onPaste } = useDropAndPaste(dashboard);
   const styles = useStyles2(getStyles, headerHeight ?? 0, isDragActive);
   const [isCollapsed, setIsCollapsed] = useEditPaneCollapsed();
 
@@ -38,7 +38,7 @@ export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls
             <div className={styles.dropOverlay}>
               <div className={styles.dropHint}>
                 <Icon name="upload" size="xxxl"></Icon>
-                <h3>Create tables from spreadsheets</h3>
+                <h3>{hint}</h3>
               </div>
             </div>
           </div>

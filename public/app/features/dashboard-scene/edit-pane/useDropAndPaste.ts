@@ -1,12 +1,25 @@
-import { DataFrame } from '@grafana/data';
-import { usePluginHooks } from 'app/features/plugins/extensions/usePluginHooks';
-import { ClipboardEvent, useCallback } from 'react';
+import { ClipboardEvent, DragEvent, useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Observable } from 'rxjs';
-import { DashboardScene } from '../scene/DashboardScene';
+
+import { DataFrame } from '@grafana/data';
 import { VizPanel, VizPanelMenu } from '@grafana/scenes';
+import { useAppNotification } from 'app/core/copy/appNotification';
+import { usePluginHooks } from 'app/features/plugins/extensions/usePluginHooks';
+
+import { DashboardScene } from '../scene/DashboardScene';
 import { VizPanelLinks, VizPanelLinksMenu } from '../scene/PanelLinks';
 import { panelMenuBehavior } from '../scene/PanelMenuBehavior';
+
+const SUPPORTED_FILE_TYPES = [
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'application/json',
+  'image/png',
+  'image/jpeg',
+];
 
 export interface FileImportResult {
   dataFrames: DataFrame[];
@@ -14,6 +27,8 @@ export interface FileImportResult {
 }
 
 export function useDropAndPaste(dashboard: DashboardScene) {
+  const notify = useAppNotification();
+  const [fileType, setFileType] = useState<string | undefined>();
   const { hooks: fileHooks } = usePluginHooks<(data: File | string) => Observable<FileImportResult>>({
     extensionPointId: 'dashboard/grid',
     limitPerPlugin: 1,
@@ -25,6 +40,7 @@ export function useDropAndPaste(dashboard: DashboardScene) {
 
   const onImportFile = useCallback(
     (file?: File) => {
+      // No file means the user dropped something that wasn't accepted
       if (!file) {
         return;
       }
@@ -34,11 +50,12 @@ export function useDropAndPaste(dashboard: DashboardScene) {
         result.subscribe((x) => console.log(x));
       }
 
-      //alert(`Importing file: ${file.name}`);
+      notify.success(`Importing file: ${file.name}`);
     },
-    [fileHooks]
+    [fileHooks, notify]
   );
 
+  // ClipboardItem may have multiple MIME types, but we only currently care about the first one
   const onPaste = useCallback(
     (event: ClipboardEvent<HTMLDivElement>) => {
       const clipboardData = event.clipboardData;
@@ -64,6 +81,8 @@ export function useDropAndPaste(dashboard: DashboardScene) {
             dashboard.addPanel(result);
           }
         }
+        notify.success(`Pasted text: \n${text}`);
+
         return;
       }
 
@@ -75,22 +94,64 @@ export function useDropAndPaste(dashboard: DashboardScene) {
         }
       }
 
-      if (clipboardData.types.includes('image/png') || clipboardData.types.includes('image/jpeg')) {
+      if (clipboardData.types.includes('image/png')) {
         // Handle image paste
         // const image = clipboardData.items[0].getAsFile();
-        alert('Pasted image - no preview available yet');
+        notify.success('Pasted image - no preview available yet');
+
+        return;
       }
 
-      alert('Pasted data of unknown type');
+      notify.success('Pasted data of unknown type');
     },
-    [onImportFile]
+    [dashboard, notify, onImportFile, pasteHooks]
   );
 
-  const { getRootProps, isDragActive } = useDropzone({ onDrop: ([acceptedFile]) => onImportFile(acceptedFile) });
+  const onDragEnter = useCallback((event: DragEvent) => {
+    const file = event.dataTransfer?.items[0].type;
+    setFileType(file);
+  }, []);
+
+  const { getRootProps, isDragActive } = useDropzone({
+    onDrop: ([acceptedFile]) => onImportFile(acceptedFile),
+    onDragEnter,
+    onDragLeave: () => setFileType(undefined),
+    onError: () => notify.error('Error importing file'),
+    validator: (file) => {
+      if (!SUPPORTED_FILE_TYPES.includes(file.type)) {
+        return [{ message: 'Unsupported file type', code: 'unsupported_file_type' }];
+      }
+
+      return null;
+    },
+  });
+
+  useEffect(() => {
+    !isDragActive && setFileType(undefined);
+  }, [isDragActive]);
 
   return {
+    hint: fileType ? getHint(fileType) : undefined,
     getRootProps,
     isDragActive,
     onPaste,
   };
+}
+
+function getHint(fileType: string) {
+  switch (fileType) {
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+    case 'text/csv':
+      return 'Create table from spreadsheet';
+    case 'application/json':
+      return 'Create table from JSON';
+    case 'image/png':
+    case 'image/jpeg':
+      return 'Create image panel';
+    case 'text/plain':
+      return 'Create text panel';
+    default:
+      return 'Unsupported file type';
+  }
 }
