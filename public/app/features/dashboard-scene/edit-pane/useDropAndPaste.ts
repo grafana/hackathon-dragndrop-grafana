@@ -3,25 +3,27 @@ import { ClipboardEvent, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 export function useDropAndPaste() {
-
-  const { hooks } = usePluginHooks<(data: File) => null>({
-    extensionPointId: 'dashboard/grid',
-    limitPerPlugin: 200,
+  const { hooks } = usePluginHooks<(data: File | string) => null>({
+    extensionPointId: 'dashboard/dragndrop',
+    // some plugins register twice, limiting to one for now
+    limitPerPlugin: 1,
   });
 
-  const onImportFile = useCallback((file?: File) => {
-    if (!file) {
-      return;
-    }
+  const onImportFile = useCallback(
+    (file?: File) => {
+      if (!file) {
+        return;
+      }
 
-    for (const hook of hooks) {
-      hook(file);
-    }
+      for (const hook of hooks) {
+        hook(file);
+      }
 
-    alert(`Importing file: ${file.name}`);
-  }, [hooks]);
-
-
+      alert(`Importing file: ${file.name}`);
+    },
+    [hooks]
+  );
+  console.log(`found ${hooks.length} hooks`);
 
   const onPaste = useCallback(
     (event: ClipboardEvent<HTMLDivElement>) => {
@@ -36,15 +38,18 @@ export function useDropAndPaste() {
       if (clipboardData.types.includes('text/plain')) {
         // Handle plaintext paste
         const text = clipboardData.getData('text/plain');
-        alert(`Pasted text: \n${text}`);
-
+        for (const hook of hooks) {
+          hook(text);
+        }
         return;
       }
 
       if (clipboardData.types.includes('text/html')) {
         // Handle HTML paste
         const html = clipboardData.getData('text/html');
-        alert(`Pasted HTML:\n${html}`);
+        for (const hook of hooks) {
+          hook(html);
+        }
       }
 
       if (clipboardData.types.includes('image/png') || clipboardData.types.includes('image/jpeg')) {
