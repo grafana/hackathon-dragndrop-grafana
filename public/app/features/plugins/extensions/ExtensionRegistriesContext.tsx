@@ -5,6 +5,7 @@ import { AddedLinksRegistry } from 'app/features/plugins/extensions/registry/Add
 import { ExposedComponentsRegistry } from 'app/features/plugins/extensions/registry/ExposedComponentsRegistry';
 
 import { PluginExtensionRegistries } from './registry/types';
+import { FileHandlerRegistry } from './registry/FileHandlerRegistry';
 
 export interface ExtensionRegistriesContextType {
   registries: PluginExtensionRegistries;
@@ -14,9 +15,18 @@ export interface ExtensionRegistriesContextType {
 export const AddedLinksRegistryContext = createContext<AddedLinksRegistry | undefined>(undefined);
 export const AddedComponentsRegistryContext = createContext<AddedComponentsRegistry | undefined>(undefined);
 export const ExposedComponentsRegistryContext = createContext<ExposedComponentsRegistry | undefined>(undefined);
+export const FileHandlerRegistryContext = createContext<FileHandlerRegistry | undefined>(undefined);
 
 export function useAddedLinksRegistry(): AddedLinksRegistry {
   const context = useContext(AddedLinksRegistryContext);
+  if (!context) {
+    throw new Error('No `AddedLinksRegistryContext` found.');
+  }
+  return context;
+}
+
+export function useFileHandlerRegistry(): FileHandlerRegistry {
+  const context = useContext(FileHandlerRegistryContext);
   if (!context) {
     throw new Error('No `AddedLinksRegistryContext` found.');
   }
@@ -45,11 +55,13 @@ export const ExtensionRegistriesProvider = ({
 }: PropsWithChildren<ExtensionRegistriesContextType>) => {
   return (
     <AddedLinksRegistryContext.Provider value={registries.addedLinksRegistry}>
-      <AddedComponentsRegistryContext.Provider value={registries.addedComponentsRegistry}>
-        <ExposedComponentsRegistryContext.Provider value={registries.exposedComponentsRegistry}>
-          {children}
-        </ExposedComponentsRegistryContext.Provider>
-      </AddedComponentsRegistryContext.Provider>
+      <FileHandlerRegistryContext.Provider value={registries.fileHandlerRegistry}>
+        <AddedComponentsRegistryContext.Provider value={registries.addedComponentsRegistry}>
+          <ExposedComponentsRegistryContext.Provider value={registries.exposedComponentsRegistry}>
+            {children}
+          </ExposedComponentsRegistryContext.Provider>
+        </AddedComponentsRegistryContext.Provider>
+      </FileHandlerRegistryContext.Provider>
     </AddedLinksRegistryContext.Provider>
   );
 };

@@ -18,6 +18,7 @@ import { getPluginSettings } from '../pluginSettings';
 import { importAppPlugin } from '../plugin_loader';
 
 import AppRootPage from './AppRootPage';
+import { FileHandlerRegistry } from '../extensions/registry/FileHandlerRegistry';
 
 jest.mock('../pluginSettings', () => ({
   getPluginSettings: jest.fn(),
@@ -92,6 +93,7 @@ function renderUnderRouter(page = '') {
     addedComponentsRegistry: new AddedComponentsRegistry(),
     exposedComponentsRegistry: new ExposedComponentsRegistry(),
     addedLinksRegistry: new AddedLinksRegistry(),
+    fileHandlerRegistry: new FileHandlerRegistry(),
   };
   const pagePath = page ? `/${page}` : '';
   const route = {

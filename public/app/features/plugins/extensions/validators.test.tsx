@@ -271,6 +271,7 @@ describe('Plugin Extension Validators', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
     const extensionConfig = {
@@ -387,6 +388,7 @@ describe('Plugin Extension Validators', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
     const extensionConfig = {
@@ -503,6 +505,7 @@ describe('Plugin Extension Validators', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
     const exposedComponentConfig = {
@@ -688,6 +691,7 @@ describe('Plugin Extension Validators', () => {
             addedComponents: [],
             exposedComponents: [],
             extensionPoints: [],
+            fileHandlers: []
           },
           dependencies: {
             grafanaVersion: '8.0.0',

@@ -1,6 +1,7 @@
 import type { PluginExtension, PluginExtensionLink, PluginExtensionComponent } from '@grafana/data';
 
 import { isPluginExtensionComponent, isPluginExtensionLink } from './utils';
+import { PluginExtensionFileHandler } from '@grafana/data/src/types/pluginExtensions';
 
 export type GetPluginExtensions<T = PluginExtension> = (
   options: GetPluginExtensionsOptions
@@ -50,6 +51,16 @@ export type UsePluginLinksOptions = {
 export type UsePluginLinksResult = {
   isLoading: boolean;
   links: PluginExtensionLink[];
+};
+
+export type UsePluginFileHandlersOptions = {
+  extensionPointId: string;
+  context?: object | Record<string | symbol, unknown>;
+};
+
+export type UsePluginFileHandlerResult = {
+  isLoading: boolean;
+  fileHandlers: PluginExtensionFileHandler[];
 };
 
 let singleton: GetPluginExtensions | undefined;

@@ -476,6 +476,7 @@ describe('Plugin Extensions / Utils', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
 
@@ -554,6 +555,7 @@ describe('Plugin Extensions / Utils', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
 
@@ -583,6 +585,7 @@ describe('Plugin Extensions / Utils', () => {
             addedComponents: [],
             exposedComponents: [],
             extensionPoints: [],
+            fileHandlers: [],
           },
         },
         'myorg-third-app': {
@@ -622,6 +625,7 @@ describe('Plugin Extensions / Utils', () => {
             ],
             exposedComponents: [],
             extensionPoints: [],
+            fileHandlers: [],
           },
         },
       };
@@ -678,6 +682,7 @@ describe('Plugin Extensions / Utils', () => {
             ],
             exposedComponents: [],
             extensionPoints: [],
+            fileHandlers: [],
           },
           dependencies: {
             ...genereicAppPluginConfig.dependencies,
@@ -704,6 +709,7 @@ describe('Plugin Extensions / Utils', () => {
               },
             ],
             extensionPoints: [],
+            fileHandlers: [],
           },
           dependencies: {
             ...genereicAppPluginConfig.dependencies,
@@ -725,6 +731,7 @@ describe('Plugin Extensions / Utils', () => {
               },
             ],
             extensionPoints: [],
+            fileHandlers: [],
           },
         },
         'myorg-sixth-app': {
@@ -762,6 +769,7 @@ describe('Plugin Extensions / Utils', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
     };
 
@@ -783,6 +791,7 @@ describe('Plugin Extensions / Utils', () => {
           extensions: {
             addedLinks: [],
             addedComponents: [],
+            fileHandlers: [],
             exposedComponents: [
               {
                 id: exposedComponentId,
@@ -817,6 +826,7 @@ describe('Plugin Extensions / Utils', () => {
           extensions: {
             addedLinks: [],
             addedComponents: [],
+            fileHandlers: [],
             exposedComponents: [
               {
                 id: exposedComponentId,
@@ -841,6 +851,7 @@ describe('Plugin Extensions / Utils', () => {
           id: 'myorg-fourth-app',
           extensions: {
             addedLinks: [],
+            fileHandlers: [],
             addedComponents: [],
             exposedComponents: [
               {
@@ -862,6 +873,7 @@ describe('Plugin Extensions / Utils', () => {
           id: 'myorg-fifth-app',
           extensions: {
             addedLinks: [],
+            fileHandlers: [],
             addedComponents: [],
             exposedComponents: [
               {

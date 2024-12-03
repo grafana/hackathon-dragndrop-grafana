@@ -13,6 +13,7 @@ import { PluginExtensionRegistries } from './registry/types';
 import { useLoadAppPlugins } from './useLoadAppPlugins';
 import { usePluginLinks } from './usePluginLinks';
 import { isGrafanaDevMode } from './utils';
+import { FileHandlerRegistry } from './registry/FileHandlerRegistry';
 
 jest.mock('./useLoadAppPlugins');
 jest.mock('app/features/plugins/pluginSettings', () => ({
@@ -58,6 +59,7 @@ describe('usePluginLinks()', () => {
       addedComponentsRegistry: new AddedComponentsRegistry(),
       exposedComponentsRegistry: new ExposedComponentsRegistry(),
       addedLinksRegistry: new AddedLinksRegistry(),
+      fileHandlerRegistry: new FileHandlerRegistry(),
     };
     resetLogMock(log);
 
@@ -86,6 +88,7 @@ describe('usePluginLinks()', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: [],
       },
       dependencies: {
         grafanaVersion: '8.0.0',

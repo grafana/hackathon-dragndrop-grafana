@@ -14,6 +14,7 @@ import { PluginExtensionRegistries } from './registry/types';
 import { useLoadAppPlugins } from './useLoadAppPlugins';
 import { usePluginComponent } from './usePluginComponent';
 import { isGrafanaDevMode, wrapWithPluginContext } from './utils';
+import { FileHandlerRegistry } from './registry/FileHandlerRegistry';
 
 jest.mock('./useLoadAppPlugins');
 jest.mock('app/features/plugins/pluginSettings', () => ({
@@ -83,6 +84,7 @@ describe('usePluginComponent()', () => {
       // (Otherwise the registry would reject it in the imitated production mode)
       exposedComponents: [exposedComponentConfig],
       extensionPoints: [],
+      fileHandlers: [],
     },
   };
 
@@ -91,6 +93,7 @@ describe('usePluginComponent()', () => {
       addedComponentsRegistry: new AddedComponentsRegistry(),
       exposedComponentsRegistry: new ExposedComponentsRegistry(),
       addedLinksRegistry: new AddedLinksRegistry(),
+      fileHandlerRegistry: new FileHandlerRegistry(),
     };
     jest.mocked(useLoadAppPlugins).mockReturnValue({ isLoading: false });
     jest.mocked(isGrafanaDevMode).mockReturnValue(false);
@@ -123,6 +126,7 @@ describe('usePluginComponent()', () => {
         addedComponents: [],
         exposedComponents: [],
         extensionPoints: [],
+        fileHandlers: []
       },
       dependencies: {
         grafanaVersion: '8.0.0',

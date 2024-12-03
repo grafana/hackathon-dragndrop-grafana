@@ -1,11 +1,18 @@
+import { PluginExtensionPoints } from '@grafana/data';
+import { usePluginFileHandlers } from '@grafana/runtime';
 import { ClipboardEvent, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-export function useDropAndPaste() {
+export function useDropAndPaste(extensionPointId: PluginExtensionPoints) {
+
+  const fh = usePluginFileHandlers({ extensionPointId, context: {} });
+
   const onImportFile = useCallback((file?: File) => {
     if (!file) {
       return;
     }
+
+    fh.fileHandlers[0].onFile(file);
 
     alert(`Importing file: ${file.name}`);
   }, []);

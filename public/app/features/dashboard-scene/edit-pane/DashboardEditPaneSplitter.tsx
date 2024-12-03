@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css';
 import React, { CSSProperties, useEffect } from 'react';
 
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, PluginExtensionPoints } from '@grafana/data';
 import { config, useChromeHeaderHeight } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
 import NativeScrollbar from 'app/core/components/NativeScrollbar';
@@ -23,7 +23,7 @@ interface Props {
 
 export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls }: Props) {
   const headerHeight = useChromeHeaderHeight();
-  const { getRootProps, isDragActive, onPaste } = useDropAndPaste();
+  const { getRootProps, isDragActive, onPaste } = useDropAndPaste(PluginExtensionPoints.DashboardGrid);
   const styles = useStyles2(getStyles, headerHeight ?? 0, isDragActive);
   const [isCollapsed, setIsCollapsed] = useEditPaneCollapsed();
 
