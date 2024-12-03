@@ -1,28 +1,45 @@
-import { usePluginHooks } from 'app/features/plugins/extensions/usePluginHooks';
-import { ClipboardEvent, useCallback } from 'react';
+import { ClipboardEvent, DragEvent, useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
+import { useAppNotification } from 'app/core/copy/appNotification';
+import { usePluginHooks } from 'app/features/plugins/extensions/usePluginHooks';
+
+const SUPPORTED_FILE_TYPES = [
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'application/json',
+  'image/png',
+  'image/jpeg',
+];
+
 export function useDropAndPaste() {
+  const notify = useAppNotification();
+  const [fileType, setFileType] = useState<string | undefined>();
 
   const { hooks } = usePluginHooks<(data: File) => null>({
     extensionPointId: 'dashboard/grid',
     limitPerPlugin: 200,
   });
 
-  const onImportFile = useCallback((file?: File) => {
-    if (!file) {
-      return;
-    }
+  const onImportFile = useCallback(
+    (file?: File) => {
+      // No file means the user dropped something that wasn't accepted
+      if (!file) {
+        return;
+      }
 
-    for (const hook of hooks) {
-      hook(file);
-    }
+      for (const hook of hooks) {
+        hook(file);
+      }
 
-    alert(`Importing file: ${file.name}`);
-  }, [hooks]);
+      notify.success(`Importing file: ${file.name}`);
+    },
+    [hooks, notify]
+  );
 
-
-
+  // ClipboardItem may have multiple MIME types, but we only currently care about the first one
   const onPaste = useCallback(
     (event: ClipboardEvent<HTMLDivElement>) => {
       const clipboardData = event.clipboardData;
@@ -36,7 +53,7 @@ export function useDropAndPaste() {
       if (clipboardData.types.includes('text/plain')) {
         // Handle plaintext paste
         const text = clipboardData.getData('text/plain');
-        alert(`Pasted text: \n${text}`);
+        notify.success(`Pasted text: \n${text}`);
 
         return;
       }
@@ -44,25 +61,69 @@ export function useDropAndPaste() {
       if (clipboardData.types.includes('text/html')) {
         // Handle HTML paste
         const html = clipboardData.getData('text/html');
-        alert(`Pasted HTML:\n${html}`);
+        notify.success(`Pasted HTML:\n${html}`);
+
+        return;
       }
 
-      if (clipboardData.types.includes('image/png') || clipboardData.types.includes('image/jpeg')) {
+      if (clipboardData.types.includes('image/png')) {
         // Handle image paste
         // const image = clipboardData.items[0].getAsFile();
-        alert('Pasted image - no preview available yet');
+        notify.success('Pasted image - no preview available yet');
+
+        return;
       }
 
-      alert('Pasted data of unknown type');
+      notify.success('Pasted data of unknown type');
     },
-    [onImportFile]
+    [notify, onImportFile]
   );
 
-  const { getRootProps, isDragActive } = useDropzone({ onDrop: ([acceptedFile]) => onImportFile(acceptedFile) });
+  const onDragEnter = useCallback((event: DragEvent) => {
+    const file = event.dataTransfer?.items[0].type;
+    setFileType(file);
+  }, []);
+
+  const { getRootProps, isDragActive } = useDropzone({
+    onDrop: ([acceptedFile]) => onImportFile(acceptedFile),
+    onDragEnter,
+    onDragLeave: () => setFileType(undefined),
+    onError: () => notify.error('Error importing file'),
+    validator: (file) => {
+      if (!SUPPORTED_FILE_TYPES.includes(file.type)) {
+        return [{ message: 'Unsupported file type', code: 'unsupported_file_type' }];
+      }
+
+      return null;
+    },
+  });
+
+  useEffect(() => {
+    !isDragActive && setFileType(undefined);
+  }, [isDragActive]);
 
   return {
+    hint: fileType ? getHint(fileType) : undefined,
     getRootProps,
     isDragActive,
     onPaste,
   };
+}
+
+function getHint(fileType: string) {
+  switch (fileType) {
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+    case 'text/csv':
+      return 'Create table from spreadsheet';
+    case 'application/json':
+      return 'Create table from JSON';
+    case 'image/png':
+    case 'image/jpeg':
+      return 'Create image panel';
+    case 'text/plain':
+      return 'Create text panel';
+    default:
+      return 'Unsupported file type';
+  }
 }
