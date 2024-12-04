@@ -32,7 +32,7 @@ export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls
         <div className={styles.canvasWrappperOld}>
           <NavToolbarActions dashboard={dashboard} />
           <div className={styles.controlsWrapperSticky}>{controls}</div>
-          <DashboardDropTarget>{body}</DashboardDropTarget>
+          <DashboardDropTarget dashboard={dashboard}>{body}</DashboardDropTarget>
         </div>
       </NativeScrollbar>
     );

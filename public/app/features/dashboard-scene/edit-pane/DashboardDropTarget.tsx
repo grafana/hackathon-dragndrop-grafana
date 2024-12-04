@@ -3,10 +3,17 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Icon, Modal, useStyles2 } from '@grafana/ui';
 
+import { DashboardScene } from '../scene/DashboardScene';
+
 import { useDropAndPaste } from './useDropAndPaste';
 
-export function DashboardDropTarget({ children }: { children: React.ReactNode }) {
-  const { data, hint, getRootProps, isDragActive, onClose, onPaste } = useDropAndPaste();
+interface Props {
+  children: React.ReactNode;
+  dashboard: DashboardScene;
+}
+
+export function DashboardDropTarget({ children, dashboard }: Props) {
+  const { data, hint, getRootProps, isDragActive, onClose, onPaste } = useDropAndPaste(dashboard);
   const styles = useStyles2(getStyles, isDragActive);
 
   return (

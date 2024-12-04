@@ -94,7 +94,6 @@ export function useDropAndPaste(dashboard: DashboardScene) {
             dashboard.addPanel(result);
           }
         }
-        notify.success(`Pasted text: \n${text}`);
 
         return;
       }
