@@ -21,6 +21,16 @@ const SUPPORTED_FILE_TYPES = [
   'image/jpeg',
 ];
 
+interface PastedData {
+  type: string;
+  data: string | File;
+}
+
+interface PastedData {
+  type: string;
+  data: string | File;
+}
+
 export interface FileImportResult {
   dataFrames: DataFrame[];
   file: File;
@@ -29,6 +39,7 @@ export interface FileImportResult {
 export function useDropAndPaste(dashboard: DashboardScene) {
   const notify = useAppNotification();
   const [fileType, setFileType] = useState<string | undefined>();
+  const [data, setData] = useState<PastedData | undefined>();
   const { hooks: fileHooks } = usePluginHooks<(data: File | string) => Observable<FileImportResult>>({
     extensionPointId: 'dashboard/grid',
     limitPerPlugin: 1,
@@ -49,6 +60,8 @@ export function useDropAndPaste(dashboard: DashboardScene) {
         const result = hook(file);
         result.subscribe((x) => console.log(x));
       }
+
+      setData({ type: file.type, data: file });
 
       notify.success(`Importing file: ${file.name}`);
     },
@@ -131,10 +144,12 @@ export function useDropAndPaste(dashboard: DashboardScene) {
   }, [isDragActive]);
 
   return {
+    data,
     hint: fileType ? getHint(fileType) : undefined,
     getRootProps,
     isDragActive,
     onPaste,
+    onClose: () => setData(undefined),
   };
 }
 
