@@ -1,5 +1,8 @@
+import { useCallback, useState } from 'react';
+
+import { DataSourceSettings } from '@grafana/data';
 import { llms } from '@grafana/experimental';
-import { getDataSourceSrv } from '@grafana/runtime';
+import { useLoadDataSources } from 'app/features/datasources/state';
 
 const OPENAI_MODEL_NAME = 'gpt-4o-mini';
 interface LLMDataSourceGuess {
@@ -8,42 +11,49 @@ interface LLMDataSourceGuess {
   explanation: string;
 }
 
-export async function getLLMSuggestions(query: string): Promise<LLMDataSourceGuess[]> {
-  let suggestions: LLMDataSourceGuess[] = [];
+export function useLLMSuggestions() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { dataSources, isLoading: isLoadingDataSources } = useLoadDataSources();
 
-  try {
-    const enabled = await llms.openai.enabled();
+  const getSuggestions = useCallback(
+    async (query: string) => {
+      let suggestions: LLMDataSourceGuess[] = [];
 
-    if (!enabled) {
-      return [];
-    }
-    if (query === '') {
-      return [];
-    }
+      const enabled = await llms.openai.enabled();
 
-    const completion = await llms.openai.chatCompletions({
-      model: OPENAI_MODEL_NAME,
-      messages: getMessages(query),
-    });
+      if (!enabled || query === '' || isLoadingDataSources) {
+        return suggestions;
+      }
 
-    suggestions = JSON.parse(completion.choices[0].message.content);
-  } catch (error) {
-    console.error('Error fetching LLM suggestions:', error);
-  } finally {
-    console.log('LLM suggestions:', suggestions);
-    return suggestions;
-  }
+      try {
+        setIsLoading(true);
+
+        const completion = await llms.openai.chatCompletions({
+          model: OPENAI_MODEL_NAME,
+          messages: getMessages(query, dataSources),
+        });
+
+        suggestions = JSON.parse(completion.choices[0].message.content);
+      } catch (error) {
+        console.error('Error fetching LLM suggestions:', error);
+      } finally {
+        setIsLoading(false);
+        return suggestions;
+      }
+    },
+    [dataSources, isLoadingDataSources]
+  );
+
+  return { getSuggestions, isLoading: isLoading || isLoadingDataSources };
 }
 
-function getMessages(query: string): llms.openai.Message[] {
-  const dataSourceList = getDataSourceSrv().getList();
-
+function getMessages(query: string, dataSources: DataSourceSettings[]): llms.openai.Message[] {
   const systemPrompt = `
     The following is a list of data sources available to the user.
     Each of these data sources allows users in Grafana to query data from that location by hitting its APIs,
     often using its own query language:
 
-    ${dataSourceList.map(({ name }) => name).join('\n')}
+    ${dataSources.map(({ name }) => name).join('\n')}
 
     I need you to interpret data that the user pastes in,
     and give your top 3 guesses as to which data source the user is trying to query.
