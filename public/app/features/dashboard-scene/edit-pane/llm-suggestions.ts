@@ -199,25 +199,40 @@ const SUPPORTED_DATA_SOURCES = [
   'simple grpc datasource',
 ];
 
-export async function getLLMSuggestions(query: string): Promise<void> {
-  const enabled = await llms.openai.enabled();
-  if (!enabled) {
-    return;
-  }
-  if (query === '') {
-    return;
-  }
+interface LLMDataSourceGuess {
+  datasource: string;
+  probability: number;
+  explanation: string;
+}
 
-  // Stream the completions. Each element is the next stream chunk.
-  const completion = await llms.openai.chatCompletions({
-    model: OPENAI_MODEL_NAME,
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: query },
-    ],
-  });
+export async function getLLMSuggestions(query: string): Promise<LLMDataSourceGuess[]> {
+  let suggestions: LLMDataSourceGuess[] = [];
 
-  console.log(JSON.parse(completion.choices[0].message.content));
+  try {
+    const enabled = await llms.openai.enabled();
+
+    if (!enabled) {
+      return [];
+    }
+    if (query === '') {
+      return [];
+    }
+
+    const completion = await llms.openai.chatCompletions({
+      model: OPENAI_MODEL_NAME,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: query },
+      ],
+    });
+
+    suggestions = JSON.parse(completion.choices[0].message.content);
+  } catch (error) {
+    console.error('Error fetching LLM suggestions:', error);
+  } finally {
+    console.log('LLM suggestions:', suggestions);
+    return suggestions;
+  }
 }
 
 const SYSTEM_PROMPT = `
