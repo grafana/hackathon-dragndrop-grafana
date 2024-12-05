@@ -9,6 +9,7 @@ import { DashboardScene } from '../scene/DashboardScene';
 import { panelMenuBehavior } from '../scene/PanelMenuBehavior';
 import { VizPanelMore } from './VizPanelMore';
 import { VizPanelDelete } from './VizPanelDelete';
+import { getLLMSuggestions } from './llm-suggestions';
 
 export interface FileImportResult {
   dataFrames: DataFrame[];
@@ -83,6 +84,7 @@ export function useDropAndPaste(dashboard: DashboardScene) {
         if (filtered.length == 0) {
           return;
         }
+        getLLMSuggestions(text);
         const preferedViz = filtered.find((x) => x?.type == 'table') ?? filtered[0];
         const addPanel = (model: PanelModel) => {
           const panel = buildPanelFromModel(model);
