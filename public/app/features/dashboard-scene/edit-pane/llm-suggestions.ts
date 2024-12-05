@@ -1,7 +1,7 @@
 import { llms } from '@grafana/experimental';
 import { getDataSourceSrv } from '@grafana/runtime';
 
-const OPENAI_MODEL_NAME = 'gpt-3.5-turbo-1106';
+const OPENAI_MODEL_NAME = 'gpt-4o-mini';
 interface LLMDataSourceGuess {
   datasource: string;
   probability: number;
@@ -46,16 +46,15 @@ function getMessages(query: string): llms.openai.Message[] {
     ${dataSourceList.map(({ name }) => name).join('\n')}
 
     I need you to interpret data that the user pastes in,
-    and give your top 3 guesses as to what the data the user is inputting is trying to query. 
+    and give your top 3 guesses as to which data source the user is trying to query.
+    The valid user inputs are limited to:
+    - a direct query
+    - a URL that pertains to that data source
 
     The guesses should be presented as an array of object, each object containing the following fields:
     - datasource: the name of the data source from the list above
     - probability: a number between 0 and 1 representing the likelihood that the user is querying that data source
     - explanation: a string no longer than 100 characters explaining why you think the user is querying that data source
-
-    The user might paste in one of the following:
-    - a direct query
-    - a URL that pertains to that data source
 
     Do not include data sources with a probability less than 0.2.
     The output should only contain the JSON with no extra formatting so that it can be easily parsed using JSON.parse().
