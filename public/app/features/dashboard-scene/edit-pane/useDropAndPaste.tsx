@@ -159,7 +159,7 @@ export function useDropAndPaste(dashboard: DashboardScene) {
       return;
     }
     const immediatePanels = filtered.filter((x) => x.panel !== null);
-    const preferedViz = immediatePanels.find((x) => x.panel?.type === 'table') ?? immediatePanels[0];
+    const preferedViz = immediatePanels[0];
     const addPanel = (model: PanelModel) => {
       const panel = buildPanelFromModel(model);
       panel.setState({
