@@ -124,13 +124,11 @@ export function useDropAndPaste(dashboard: DashboardScene) {
             const url = `http://localhost:3000/api/plugins/grafana-dragdroppaste-app/resources/file/${file.name}`;
             const vizPanel = new VizPanel({
               pluginId: 'canvas',
-              title: ``,
+              title: `Image fetched from ${file.name}`,
               menu: new VizPanelMenu({
                 $behaviors: [panelMenuBehavior],
               }),
-              displayMode: 'transparent',
               options: {
-                transparent: true,
                 infinitePan: false,
                 inlineEditing: true,
                 panZoom: false,
