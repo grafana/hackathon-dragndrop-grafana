@@ -30,7 +30,90 @@ export function useDropAndPaste(dashboard: DashboardScene) {
         return;
       }
 
-      if (file.type.startsWith('image/')) {
+      if (file.type === 'application/geo+json' || file.type === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const json = JSON.parse(reader.result as string);
+          if (json && isSupportedGeoData(json)) {
+            const backendSrv = getBackendSrv();
+            const payload = makeAPIFile(reader.result as string, file.name);
+            await backendSrv.post('/apis/file.grafana.app/v0alpha1/namespaces/default/files', payload);
+            const url = `http://localhost:3000/api/plugins/grafana-dragdroppaste-app/resources/geojson/${file.name}`;
+            const vizPanel = new VizPanel({
+              pluginId: 'geomap',
+              title: `GeoJSON Data fetched from ${file.name}`,
+              menu: new VizPanelMenu({
+                $behaviors: [panelMenuBehavior],
+              }),
+              options: {
+                layers: [
+                  {
+                    config: {
+                      rules: [],
+                      src: url,
+                      style: {
+                        color: {
+                          fixed: 'dark-green',
+                        },
+                        opacity: 0.4,
+                        rotation: {
+                          fixed: 0,
+                          max: 360,
+                          min: -360,
+                          mode: 'mod',
+                        },
+                        size: {
+                          fixed: 5,
+                          max: 15,
+                          min: 2,
+                        },
+                        symbol: {
+                          fixed: 'img/icons/marker/circle.svg',
+                          mode: 'fixed',
+                        },
+                        symbolAlign: {
+                          horizontal: 'center',
+                          vertical: 'center',
+                        },
+                        textConfig: {
+                          fontSize: 12,
+                          offsetX: 0,
+                          offsetY: 0,
+                          textAlign: 'center',
+                          textBaseline: 'middle',
+                        },
+                      },
+                    },
+                    location: {
+                      mode: 'auto',
+                    },
+                    name: 'Layer 1',
+                    tooltip: true,
+                    type: 'geojson',
+                  },
+                ],
+              },
+              $data: new SceneDataTransformer({
+                $data: new SceneQueryRunner({
+                  queries: [
+                    {
+                      queryType: 'randomWalk',
+                      refId: 'A',
+                    },
+                  ],
+                  datasource: { uid: '-- Grafana --', type: 'grafana' },
+                }),
+                transformations: [],
+              }),
+            });
+
+            dashboard.addPanel(vizPanel);
+          }
+        };
+
+        reader.readAsText(file);
+        return;
+      } else if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64String = reader.result as string;
@@ -41,11 +124,13 @@ export function useDropAndPaste(dashboard: DashboardScene) {
             const url = `http://localhost:3000/api/plugins/grafana-dragdroppaste-app/resources/file/${file.name}`;
             const vizPanel = new VizPanel({
               pluginId: 'canvas',
-              title: `Image fetched from ${file.name}`,
+              title: ``,
               menu: new VizPanelMenu({
                 $behaviors: [panelMenuBehavior],
               }),
+              displayMode: 'transparent',
               options: {
+                transparent: true,
                 infinitePan: false,
                 inlineEditing: true,
                 panZoom: false,
@@ -249,4 +334,7 @@ const makeAPIFile = (fileData: string, name: string) => {
       ],
     },
   };
+};
+const isSupportedGeoData = (json: any): boolean => {
+  return json.type === 'FeatureCollection' && Array.isArray(json.features);
 };
