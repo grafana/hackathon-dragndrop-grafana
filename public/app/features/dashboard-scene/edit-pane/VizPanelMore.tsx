@@ -59,6 +59,8 @@ function VizPanelMoreRenderer({ model }: SceneComponentProps<VizPanelMore>) {
                         <TextLink
                           key={datasource.id}
                           href={`/connections/datasources/edit/${datasource.uid}`}
+                          target="_blank"
+                          rel="noreferrer"
                           variant="bodySmall"
                         >
                           {datasource.typeName} ({probability * 100}% match){' '}
